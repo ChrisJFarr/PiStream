@@ -1,0 +1,51 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+
+  mongo:
+    image: mongo:3.2.7
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - data-volume:/var/lib/db
+    links:
+      - backend  # Named after the header "backend:" not the container or image names
+    # container_name must align with SEARCH_MONGO_CONTAINER in backend/django_project/django_project/settings.py
+    container_name: search_mongo
+
+  backend:
+    build: backend/.
+    ports:
+      - 8000:80
+    container_name: backend
+    image: backend:latest
+
+  static:
+    build: static/.
+    ports:
+      - 5000:80
+    container_name: static
+    image: static:latest
+
+  recommend:
+    build: recommend/.
+    ports:
+      - 8800:80
+    container_name: recommend
+    image: recommend:latest
+
+  recommend_db:
+    image: mongo:3.2.7
+    restart: always
+    ports:
+      - 27018:27017
+    volumes:
+      - data-volume:/var/lib/db
+    links:
+      - recommend
+    container_name: recommend_mongo
+
+volumes:
+  data-volume:
